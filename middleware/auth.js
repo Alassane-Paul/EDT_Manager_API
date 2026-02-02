@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { Utilisateur, Etablissement, Enseignant, Accreditation } = require('../database/models');
 const { Op } = require('sequelize');
 const config = require('../config/config');
-const AuthService = require('../services/authService');
+const AuthService = require('../services/auth.service');
 const { RoleUtilisateur } = require('../utils/enums');
 
 /**
@@ -34,6 +34,14 @@ const authenticateToken = async (req, res, next) => {
         {
           association: 'etablissement',
           attributes: ['id', 'nom', 'type', 'statut']
+        },
+        {
+          association: 'enseignant',
+          attributes: ['id']
+        },
+        {
+          association: 'eleve',
+          attributes: ['id', 'classe_id']
         }
       ]
     });

@@ -3,7 +3,7 @@ const { sequelize } = require('../../config/database');
 
 const Conversation = sequelize.define('Conversation', {
     id: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(36),
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
@@ -11,6 +11,10 @@ const Conversation = sequelize.define('Conversation', {
         type: DataTypes.ENUM('DIRECT', 'GROUP'),
         defaultValue: 'DIRECT',
         allowNull: false
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     last_message_at: {
         type: DataTypes.DATE,

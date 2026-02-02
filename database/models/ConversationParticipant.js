@@ -2,17 +2,22 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../../config/database');
 
 const ConversationParticipant = sequelize.define('ConversationParticipant', {
+    id: {
+        type: DataTypes.STRING(36),
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
     conversation_id: {
-        type: DataTypes.UUID,
-        primaryKey: true,
+        type: DataTypes.STRING(36),
+        allowNull: false,
         references: {
             model: 'conversations',
             key: 'id'
         }
     },
     utilisateur_id: {
-        type: DataTypes.UUID,
-        primaryKey: true,
+        type: DataTypes.STRING(36),
+        allowNull: false,
         references: {
             model: 'utilisateurs',
             key: 'id'

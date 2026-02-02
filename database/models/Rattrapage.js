@@ -150,6 +150,19 @@ Rattrapage.prototype.marquerRealise = function () {
   return this.save();
 };
 
+Rattrapage.prototype.valider = function () {
+  this.statut = StatutRattrapage.VALIDE;
+  return this.save();
+};
+
+Rattrapage.prototype.rejeter = function (motif) {
+  this.statut = StatutRattrapage.REFUSE;
+  if (motif) {
+    this.commentaires = (this.commentaires ? this.commentaires + '\n' : '') + `Rejeté: ${motif}`;
+  }
+  return this.save();
+};
+
 Rattrapage.prototype.annuler = function () {
   this.statut = StatutRattrapage.ANNULE;
   return this.save();

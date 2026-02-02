@@ -1,3 +1,11 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/mgvybwur/public_html/edt-api"
+PassengerBaseURI "/edt-api"
+PassengerNodejs "/home/mgvybwur/nodevenv/public_html/edt-api/22/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerAppLogFile "/home/mgvybwur/edt_back.log"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
 # ==============================================================================
 # CONFIGURATION BACKEND - EDTS MANAGER
 # ==============================================================================
@@ -22,13 +30,11 @@
     RewriteRule ^(.*)$ http://127.0.0.1:5000/$1 [P,L]
 </IfModule>
 
-
 # 4. Paramètres de sécurité de base au niveau Apache
 <IfModule mod_headers.c>
     # Note: Les en-têtes CORS sont gérés dynamiquement par Express
     Header set Referrer-Policy "no-referrer-when-downgrade"
 </IfModule>
-
 
 # 5. Désactiver le listing des répertoires
 Options -Indexes

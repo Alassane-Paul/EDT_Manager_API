@@ -31,12 +31,7 @@ const Absence = sequelize.define('Absence', {
     type: DataTypes.DATE,
     allowNull: false,
     validate: {
-      isDate: true,
-      isAfter: function (value) {
-        if (this.date_debut && value <= this.date_debut) {
-          throw new Error('La date de fin doit être après la date de début');
-        }
-      }
+      isDate: true
     }
   },
   motif: {
@@ -73,8 +68,22 @@ const Absence = sequelize.define('Absence', {
 }, {
   tableName: 'absences',
   hooks: {
+    beforeCreate: (absence) => {
+      if (typeof absence.date_debut === 'string') {
+        absence.date_debut = new Date(absence.date_debut);
+      }
+      if (typeof absence.date_fin === 'string') {
+        absence.date_fin = new Date(absence.date_fin);
+      }
+    },
     beforeUpdate: (absence) => {
       absence.updated_at = new Date();
+      if (typeof absence.date_debut === 'string') {
+        absence.date_debut = new Date(absence.date_debut);
+      }
+      if (typeof absence.date_fin === 'string') {
+        absence.date_fin = new Date(absence.date_fin);
+      }
     }
   },
   indexes: [
@@ -90,14 +99,7 @@ const Absence = sequelize.define('Absence', {
     {
       fields: ['necessite_remplacement']
     }
-  ],
-  validate: {
-    bothOrNeither() {
-      if ((this.enseignant_id === null) === (this.eleve_id === null)) {
-        throw new Error('Une absence doit être liée à soit un enseignant, soit un élève, mais pas les deux (ou aucun).');
-      }
-    }
-  }
+  ]
 });
 
 // Méthodes d'instance

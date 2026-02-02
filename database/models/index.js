@@ -43,6 +43,7 @@ const Subscription = require('./Subscription');
 const UsageMetric = require('./UsageMetric');
 const Invoice = require('./Invoice');
 const PricingRule = require('./PricingRule');
+const EnseignantMatiere = require('./EnseignantMatiere');
 const { Sequelize } = require('sequelize');
 
 // Définition des associations
@@ -283,10 +284,7 @@ Classe.hasMany(Eleve, {
 });
 
 // Enseignant - Matières (Many-to-Many)
-const EnseignantMatiere = sequelize.define('EnseignantMatiere', {}, {
-  tableName: 'enseignants_matieres',
-  timestamps: false
-});
+// EnseignantMatiere is imported above
 
 Enseignant.belongsToMany(Matiere, {
   through: EnseignantMatiere,

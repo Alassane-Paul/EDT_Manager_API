@@ -3,12 +3,12 @@ const { sequelize } = require('../../config/database');
 
 const Message = sequelize.define('Message', {
     id: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(36),
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
     conversation_id: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(36),
         allowNull: false,
         references: {
             model: 'conversations',
@@ -16,7 +16,7 @@ const Message = sequelize.define('Message', {
         }
     },
     sender_id: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(36),
         allowNull: false,
         references: {
             model: 'utilisateurs',
@@ -25,7 +25,7 @@ const Message = sequelize.define('Message', {
     },
     content: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: false
     },
     type: {
         type: DataTypes.ENUM('TEXT', 'IMAGE', 'FILE'),
@@ -38,6 +38,18 @@ const Message = sequelize.define('Message', {
     is_read: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    delivered_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    read_at: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    deleted_at: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
 }, {
     tableName: 'messages',

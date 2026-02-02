@@ -85,9 +85,17 @@ const Utilisateur = sequelize.define('Utilisateur', {
       if (utilisateur.role === RoleUtilisateur.ADMIN) {
         utilisateur.deux_fa_active = true;
       }
+      // Normalize email for consistency
+      if (utilisateur.email) {
+        utilisateur.email = utilisateur.email.trim().toLowerCase();
+      }
     },
     beforeUpdate: (utilisateur) => {
       utilisateur.updated_at = new Date();
+      // Normalize email for consistency
+      if (utilisateur.email) {
+        utilisateur.email = utilisateur.email.trim().toLowerCase();
+      }
     }
   },
   indexes: [

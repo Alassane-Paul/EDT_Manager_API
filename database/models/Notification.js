@@ -42,8 +42,7 @@ const Notification = sequelize.define('Notification', {
     type: DataTypes.STRING,
     allowNull: true,
     validate: {
-      len: [0, 500],
-      isUrl: true
+      len: [0, 500]
     }
   },
   lue: {
@@ -95,22 +94,22 @@ const Notification = sequelize.define('Notification', {
 });
 
 // Méthodes d'instance
-Notification.prototype.marquerCommeLue = function() {
+Notification.prototype.marquerCommeLue = function () {
   this.lue = true;
   return this.save();
 };
 
-Notification.prototype.marquerCommeNonLue = function() {
+Notification.prototype.marquerCommeNonLue = function () {
   this.lue = false;
   return this.save();
 };
 
-Notification.prototype.estUrgente = function() {
-  return this.priorite === PrioriteNotification.CRITIQUE || 
-         this.priorite === PrioriteNotification.HAUTE;
+Notification.prototype.estUrgente = function () {
+  return this.priorite === PrioriteNotification.CRITIQUE ||
+    this.priorite === PrioriteNotification.HAUTE;
 };
 
-Notification.prototype.estRecente = function() {
+Notification.prototype.estRecente = function () {
   const dateEnvoi = new Date(this.date_envoi);
   const maintenant = new Date();
   const diffTime = Math.abs(maintenant - dateEnvoi);
@@ -118,7 +117,7 @@ Notification.prototype.estRecente = function() {
   return diffHeures < 24; // Moins de 24 heures
 };
 
-Notification.prototype.getInformations = function() {
+Notification.prototype.getInformations = function () {
   return {
     id: this.id,
     type: this.type,

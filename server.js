@@ -53,38 +53,38 @@ app.use((req, res, next) => {
 });
 
 // Import des routes
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const etablissementRoutes = require('./routes/etablissements');
-const classeRoutes = require('./routes/classes');
-const matiereRoutes = require('./routes/matieres');
-const enseignantRoutes = require('./routes/enseignants');
-const salleRoutes = require('./routes/salles');
-const coursRoutes = require('./routes/cours');
-const emploiTempsRoutes = require('./routes/emplois-temps');
-const rattrapageRoutes = require('./routes/rattrapages');
-const absenceRoutes = require('./routes/absences');
-const teacherAbsenceRoutes = require('./routes/teacherAbsences');
-const statistiqueRoutes = require('./routes/statistiques');
-const notificationRoutes = require('./routes/notifications');
-const eleveRoutes = require('./routes/eleves');
-const directeurRoutes = require('./routes/directeurs');
-const rpRoutes = require('./routes/responsables');
-const periodeRoutes = require('./routes/periodes');
-const evaluationRoutes = require('./routes/evaluations');
-const noteRoutes = require('./routes/notes');
-const bulletinRoutes = require('./routes/bulletins');
-const ressourceRoutes = require('./routes/ressources');
-const seanceVirtuelleRoutes = require('./routes/seancesVirtuelles');
-const examenRoutes = require('./routes/examens');
-const sessionExamenRoutes = require('./routes/sessionsExamen');
-const repartitionRoutes = require('./routes/repartitions');
-const subscriptionRoutes = require('./routes/subscriptions');
-const invoiceRoutes = require('./routes/invoices');
-const pricingRoutes = require('./routes/pricing');
-const paymentRoutes = require('./routes/payments');
-const accreditationRoutes = require('./routes/accreditationRoutes');
-const chatRoutes = require('./routes/chatRoutes');
+const authRoutes = require('./routes/auth.route');
+const userRoutes = require('./routes/users.route');
+const etablissementRoutes = require('./routes/etablissements.route');
+const classeRoutes = require('./routes/classes.route');
+const matiereRoutes = require('./routes/matieres.route');
+const enseignantRoutes = require('./routes/enseignants.route');
+const salleRoutes = require('./routes/salles.route');
+const coursRoutes = require('./routes/cours.route');
+const emploiTempsRoutes = require('./routes/emplois-temps.route');
+const rattrapageRoutes = require('./routes/rattrapages.route');
+const absenceRoutes = require('./routes/absences.route');
+const teacherAbsenceRoutes = require('./routes/teacherAbsences.route');
+const statistiqueRoutes = require('./routes/statistiques.route');
+const notificationRoutes = require('./routes/notifications.route');
+const eleveRoutes = require('./routes/eleves.route');
+const directeurRoutes = require('./routes/directeurs.route');
+const rpRoutes = require('./routes/responsables.route');
+const periodeRoutes = require('./routes/periodes.route');
+const evaluationRoutes = require('./routes/evaluations.route');
+const noteRoutes = require('./routes/notes.route');
+const bulletinRoutes = require('./routes/bulletins.route');
+const ressourceRoutes = require('./routes/ressources.route');
+const seanceVirtuelleRoutes = require('./routes/seancesVirtuelles.route');
+const examenRoutes = require('./routes/examens.route');
+const sessionExamenRoutes = require('./routes/sessionsExamen.route');
+const repartitionRoutes = require('./routes/repartitions.route');
+const subscriptionRoutes = require('./routes/subscriptions.route');
+const invoiceRoutes = require('./routes/invoices.route');
+const pricingRoutes = require('./routes/pricing.route');
+const paymentRoutes = require('./routes/payments.route');
+const accreditationRoutes = require('./routes/accreditation.route');
+const chatRoutes = require('./routes/chat.route');
 
 const { logAccess } = require('./middleware/auth');
 
@@ -282,13 +282,34 @@ const startServer = async () => {
     });
     ioInstance = io;
 
+    // Presence Tracking
+    const onlineUsers = new Map(); // userId -> socketIds Set
+    const socketToUser = new Map(); // socketId -> userId
+
     io.on('connection', (socket) => {
       console.log(`User connected: ${socket.id}`);
 
       // Rejoindre la room globale de l'utilisateur (pour notifs privées)
       socket.on('join_user_room', (userId) => {
         socket.join(`user_${userId}`);
-        console.log(`User ${userId} joined their personal room`);
+
+        // Presence Logic
+        if (!onlineUsers.has(userId)) {
+          onlineUsers.set(userId, new Set());
+          // Broadcast status change only if this is the first connection for this user
+          io.emit('user_status_change', { userId, status: 'online' });
+          console.log(`User ${userId} is now ONLINE`);
+        }
+        onlineUsers.get(userId).add(socket.id);
+        socketToUser.set(socket.id, userId);
+
+        console.log(`User ${userId} joined their personal room (Socket: ${socket.id})`);
+      });
+
+      // Request initial online users list
+      socket.on('get_online_users', () => {
+        const users = Array.from(onlineUsers.keys());
+        socket.emit('online_users_list', users);
       });
 
       // Rejoindre une conversation spécifique
@@ -302,13 +323,43 @@ const startServer = async () => {
         socket.leave(`conversation_${conversationId}`);
       });
 
-      // Typing indicators
-      socket.on('typing', (data) => {
-        // data: { conversationId, userId, isTyping }
+      // Typing indicators - Broadcast to conversation room AND participants' user rooms (for sidebar)
+      socket.on('typing', async (data) => {
+        // data: { conversationId, userId, isTyping, userName }
         socket.to(`conversation_${data.conversationId}`).emit('user_typing', data);
+
+        try {
+          // Lazy require to avoid potential circular dependency issues
+          const { ConversationParticipant } = require('./database/models');
+          const participants = await ConversationParticipant.findAll({
+            where: { conversation_id: data.conversationId },
+            attributes: ['utilisateur_id']
+          });
+
+          participants.forEach(p => {
+            if (p.utilisateur_id !== data.userId) {
+              io.to(`user_${p.utilisateur_id}`).emit('user_typing_sidebar', data);
+            }
+          });
+        } catch (error) {
+          console.error('Error during typing broadcast:', error);
+        }
       });
 
       socket.on('disconnect', () => {
+        const userId = socketToUser.get(socket.id);
+        if (userId && onlineUsers.has(userId)) {
+          const sockets = onlineUsers.get(userId);
+          sockets.delete(socket.id);
+          socketToUser.delete(socket.id);
+
+          if (sockets.size === 0) {
+            onlineUsers.delete(userId);
+            // Broadcast offline status
+            io.emit('user_status_change', { userId, status: 'offline' });
+            console.log(`User ${userId} is now OFFLINE`);
+          }
+        }
         console.log("User Disconnected", socket.id);
       });
     });
@@ -362,7 +413,7 @@ const startServer = async () => {
       console.log(`POST /api/emplois-temps/generer`);
 
       // Démarrer le scheduler de tâches automatisées
-      const schedulerService = require('./services/schedulerService');
+      const schedulerService = require('./services/scheduler.service');
       schedulerService.start();
     });
   } catch (error) {

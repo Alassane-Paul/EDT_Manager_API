@@ -142,6 +142,18 @@ const Etablissement = sequelize.define('Etablissement', {
     validate: {
       isIn: [Object.values(StatutEtablissement)]
     }
+  },
+  heure_debut_journee: {
+    type: DataTypes.STRING,
+    defaultValue: '08:00'
+  },
+  heure_fin_journee: {
+    type: DataTypes.STRING,
+    defaultValue: '18:00'
+  },
+  duree_cours_standard: {
+    type: DataTypes.INTEGER,
+    defaultValue: 60
   }
 }, {
   tableName: 'etablissements',

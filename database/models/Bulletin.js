@@ -43,6 +43,16 @@ const Bulletin = sequelize.define('Bulletin', {
     date_generation: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
+    },
+    nb_absences: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: true
+    },
+    appreciation_conduite: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'Appréciation sur la conduite et le comportement'
     }
 }, {
     tableName: 'bulletins',

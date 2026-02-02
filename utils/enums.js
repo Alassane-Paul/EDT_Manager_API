@@ -104,6 +104,8 @@ module.exports = {
 
   StatutRattrapage: {
     DEMANDE: "demande",
+    VALIDE: "valide",
+    REFUSE: "refuse",
     PLANIFIE: "planifie",
     REALISE: "realise",
     ANNULE: "annule"
@@ -112,7 +114,7 @@ module.exports = {
   StatutProfessionnel: {
     TITULAIRE: "titulaire",
     CONTRACTUEL: "contractuel",
-    vacataire: "vacataire"
+    VACATAIRE: "vacataire"
   },
   PreferenceHoraire: {
     MATIN: "matin",
@@ -184,12 +186,16 @@ module.exports = {
     ALERTE: "alerte",
     URGENCE: "urgence",
     RAPPEL: "rappel",
+    RATTRAPAGE: "rattrapage",
+    EMPLOI_TEMPS: "emploi_temps",
+    ABSENCE: "absence"
   },
   CanalNotification: {
     IN_APP: "in_app",
     EMAIL: "email",
     SMS: "sms",
     PUSH: "push",
+    TOUS: "tous"
   },
   StatutConnexion: {
     SUCCES: "succes",
